@@ -103,9 +103,12 @@ describe("RoleService", () => {
   test("should remove role by userId and revoke access", () => {
     const userId = "userToRemove";
     const role = RoleService.Roles.Editor;
+    const entityId = "entityId";
+    const entity2Id = "entity2Id";
 
     roleService.grantRole(userId, role);
-    roleService.setEntityAccessRole("entityId", role);
+    roleService.setEntityAccessRole(entityId, role);
+    roleService.setEntityAccessRole(entity2Id, userId);
 
     roleService.removeRole(userId); // Here we're using userId instead of roleName
 
@@ -114,8 +117,8 @@ describe("RoleService", () => {
     expect(userRoles).not.toContain(role);
 
     // Check if the role has been revoked for the entity
-    const entityRoles = roleService.getActiveEntityAccessRoles("entityId");
-    expect(entityRoles).not.toContain(role);
+    const entityRoles = roleService.getActiveEntityAccessRoles(entity2Id);
+    expect(entityRoles).not.toContain(userId);
   });
 
   test("should not revoke role from user if user does not have the role", () => {

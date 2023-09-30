@@ -167,19 +167,23 @@ class RoleService {
     } else {
       // If the name is presumed to be a userId.
       const userId = roleNameOrUserId;
+      const userRoles = this.getActiveUserRoles(userId);
       Object.values(RoleService.Roles).forEach((role) => {
         // Revoking all configured roles for the user.
-        if (this.getActiveUserRoles(userId).includes(role)) {
+        if (userRoles.includes(role)) {
           this.revokeRole(userId, role);
         }
       });
 
       allEntityIds.forEach((entityId) => {
-        // Revoking user's access to all entities where user's role is active.
-        Object.values(RoleService.Roles).forEach((role) => {
-          if (this.getActiveEntityAccessRoles(entityId).includes(role)) {
-            this.removeEntityAccessRole(entityId, role);
-          }
+        const entityRoles = this.getActiveEntityAccessRoles(entityId);
+        const entityRolesWithUserId = entityRoles.filter(
+          (role) => role === userId
+        );
+
+        // Revoking user's access to all entities where user's id-based role is active.
+        entityRolesWithUserId.forEach((role) => {
+          this.removeEntityAccessRole(entityId, userId);
         });
       });
     }
