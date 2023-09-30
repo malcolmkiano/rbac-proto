@@ -142,6 +142,10 @@ class RoleService {
    */
   removeRole(roleNameOrUserId) {
     const roleId = RoleService.Roles[roleNameOrUserId];
+    const allEntityIds = new Set(
+      this.#entityAccessRoleRecords.map((record) => record.entityId)
+    );
+
     if (roleId) {
       // If the name is a configured role.
       delete RoleService.Roles[roleNameOrUserId];
@@ -155,9 +159,6 @@ class RoleService {
         }
       });
 
-      const allEntityIds = new Set(
-        this.#entityAccessRoleRecords.map((record) => record.entityId)
-      );
       allEntityIds.forEach((entityId) => {
         if (this.getActiveEntityAccessRoles(entityId).includes(roleId)) {
           this.removeEntityAccessRole(entityId, roleId);
@@ -173,9 +174,6 @@ class RoleService {
         }
       });
 
-      const allEntityIds = new Set(
-        this.#entityAccessRoleRecords.map((record) => record.entityId)
-      );
       allEntityIds.forEach((entityId) => {
         // Revoking user's access to all entities where user's role is active.
         Object.values(RoleService.Roles).forEach((role) => {

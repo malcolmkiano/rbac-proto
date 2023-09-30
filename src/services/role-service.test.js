@@ -117,4 +117,59 @@ describe("RoleService", () => {
     const entityRoles = roleService.getActiveEntityAccessRoles("entityId");
     expect(entityRoles).not.toContain(role);
   });
+
+  test("should not revoke role from user if user does not have the role", () => {
+    const roleName = "AdminRole";
+    const roleKey = "admin";
+    const userId = "userId";
+
+    // Creating a role
+    roleService.createRole(roleName, roleKey);
+
+    // Assign a different role
+    roleService.grantRole(userId, RoleService.Roles.Editor);
+
+    // Setup a spy on revokeRole method
+    const revokeRoleSpy = jest.spyOn(roleService, "revokeRole");
+
+    // Trying to remove role that the user does not have
+    roleService.removeRole(roleName);
+
+    // revokeRole should not have been called
+    expect(revokeRoleSpy).not.toHaveBeenCalled();
+
+    // User should only have their other role
+    expect(roleService.getActiveUserRoles(userId)).toEqual([
+      RoleService.Roles.Editor,
+    ]);
+  });
+
+  test("should not remove access role from entity if entity does not have the role", () => {
+    const roleName = "AdminRole";
+    const roleKey = "admin";
+    const entityId = "entityId";
+
+    // Creating a role
+    roleService.createRole(roleName, roleKey);
+
+    // Assign a different role
+    roleService.setEntityAccessRole(entityId, RoleService.Roles.Editor);
+
+    // Setup a spy on revokeRole method
+    const removeEntityAccessRoleSpy = jest.spyOn(
+      roleService,
+      "removeEntityAccessRole"
+    );
+
+    // Trying to remove role that the entity does not have
+    roleService.removeRole(roleName);
+
+    // revokeRole should not have been called
+    expect(removeEntityAccessRoleSpy).not.toHaveBeenCalled();
+
+    // Entity should only have it's other access role
+    expect(roleService.getActiveEntityAccessRoles(entityId)).toEqual([
+      RoleService.Roles.Editor,
+    ]);
+  });
 });
